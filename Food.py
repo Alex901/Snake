@@ -1,14 +1,14 @@
 import random
 
-class Food:
+class Food:     # Klassen för maten
     def __init__(self, game):
-        self.game = game
-        self.board = game.game_board
-        self.eaten = 0; # Behöver jag ? 
-        self.exists = False;
-        self.special = False;
-
-    def spawn_food(self):
+        self.game = game # för att hantera maten behöver vi tillgång till spelet
+        self.board = game.game_board # för att kunna rita ut maten på spelplanen
+        self.eaten = 0; # Variabel som håller koll på hur mycket mat som ätits så vi kan öka svårighetsgraden
+        self.exists = False; # Variabel som håller koll på om maten finns på spelplanen
+        self.special = False; # Variabel som håller koll på om specialmaten finns på spelplanen
+ 
+    def spawn_food(self): # Funktion som spawnar in maten på spelplanen på slumpmässig "ledig" plats
         while True:
             x = random.randint(0, len(self.board) - 1)
             y = random.randint(0, len(self.board[0]) - 1)
@@ -26,8 +26,8 @@ class Food:
                     self.special = True
                     break
             
-    def eat_food(self):
-        self.game.score += self.game.level
+    def eat_food(self): # Funktion som körs när ormen äter maten
+        self.game.score += self.game.level*self.game.difficulty+1
         self.eaten += 1
         self.exists = False
         
@@ -35,8 +35,8 @@ class Food:
             self.game.level += 1
             print("Level up!")
             
-    def eat_special_food(self):
-        self.game.score += 3*self.game.level
+    def eat_special_food(self): # Funktion som körs när ormen äter specialmaten
+        self.game.score += 3*self.game.level*self.game.difficulty+2
         self.eaten += 1
         self.special = False
         print("Special food eaten!")
