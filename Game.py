@@ -51,10 +51,6 @@ class Game: # Klassen som hanterar spelet
                 self.game_board[i][0] = 0
                 self.game_board[i][self.board_size - 1] = 0
         
-        for row in self.game_board:
-            print(row)
-            
-        print()
         
     def draw_score_level(self):
         font = pygame.font.Font(None, 36)  # ritar ut poäng och nivå
