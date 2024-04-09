@@ -27,7 +27,7 @@ class Food:     # Klassen för maten
                     break
             
     def eat_food(self): # Funktion som körs när ormen äter maten
-        self.game.score += self.game.level*self.game.difficulty+1
+        self.game.score += self.game.level*(self.game.difficulty+1)
         self.eaten += 1
         self.exists = False
         
@@ -36,7 +36,7 @@ class Food:     # Klassen för maten
             print("Level up!")
             
     def eat_special_food(self): # Funktion som körs när ormen äter specialmaten
-        self.game.score += 3*self.game.level*self.game.difficulty+2
+        self.game.score += 5+self.game.level*(self.game.difficulty+1)
         self.eaten += 1
         self.special = False
         print("Special food eaten!")

@@ -14,13 +14,12 @@ LEVEL = 1
 
 
 class Game: # Klassen som hanterar spelet 
-    def __init__(self, board_size=GRID_SIZE):   # Konstruktor    
+    def __init__(self, board_size=GRID_SIZE):   # Konstruktor, skulle int behöva variabeln för board_size här. 
         pygame.display.set_caption("Snake")     # Sätter titeln för fönstret till Snake
         self.score = 0; # Variabel som håller koll på poängen
         self.level = 1; # Variabel som håller koll på vilken nivå spelaren är på
         self.board_size = board_size # Storleken på spelplanen
         self.screen = pygame.display.set_mode((SCREEN_SIZE, SCREEN_SIZE))   # Skapar fönstret med definierad storlek
-        self.running = True 
         self.menu = Menu(self.screen, self)  # Skapar en huvudmenyn
         self.DIFFICULTY = ["Easy", "Medium", "Hard","Impossible"] 
         self.BORDERS = ["On", "Off"] 
@@ -29,9 +28,11 @@ class Game: # Klassen som hanterar spelet
         self.game_board = [[0 for _ in range(board_size)] for _ in range(board_size)]  # Skapar spelmatrisen
         self.update_border()  # Uppdaterar om det ska finnas kanter eller inte
         self.food = Food(self) # Skapar klassen för maten
-        self.snake = Snake(self.game_board, self.food)  # Skapar ormen
-        self.clock = pygame.time.Clock()  # Skapar en klocka för att hålla koll på spelets hastighet
         self.start = False 
+        self.snake = Snake(self)
+        self.clock = pygame.time.Clock()  # Skapar en klocka för att hålla koll på spelets hastighet
+        self.god = False # Variabel som håller koll på om autospel är på eller inte
+        self.game_speed = 0; 
     
     def update_gamespeed(self):     # Funktion som uppdaterar spelets hastighet
         self.game_speed = 8 + self.difficulty*8 * self.level*0.2 
@@ -89,6 +90,7 @@ class Game: # Klassen som hanterar spelet
             pygame.display.flip()
             choice = self.menu.handle_input()
         
+        self.running = True
         self.draw_grid()   
         self.draw_score_level()  
         pygame.display.flip() # Uppdaterar fönstret
@@ -102,8 +104,16 @@ class Game: # Klassen som hanterar spelet
                         self.start = True
                         self.update_gamespeed()
                         self.snake.set_direction(event.key)
-
+                    elif event.key == pygame.K_g:
+                        self.god = not self.god
+                        self.start = not self.start
+            
             if self.start: # Om spelet har startat     
+                if self.god:
+                    self.update_gamespeed()
+                    print("Auto play")
+                    self.auto_play()
+                    
                 self.draw_grid()  
                 self.draw_score_level() 
                 pygame.display.flip()  # Uppdaterar fönstret
@@ -115,6 +125,22 @@ class Game: # Klassen som hanterar spelet
             self.snake.move()   # Flytta ormen         
 
         pygame.quit()  # Stänger ner pygame
+        
+    def auto_play(self): # Funktion som spelar speled automagiskt     
+        self.start = True
+        self.snake.direction = 'UP'
+        
+        
+    def reset(self):
+        self.score = 0
+        self.level = 1
+        self.game_board = [[0 for _ in range(self.board_size)] for _ in range(self.board_size)]
+        self.update_border()
+        self.food = Food(self)
+        self.snake = Snake(self)
+        self.god = False
+        print("Reset")
+        print(self.god)
         
         
 def main():
