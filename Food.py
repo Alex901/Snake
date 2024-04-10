@@ -1,5 +1,5 @@
 import random
-
+import pygame
 class Food:     # Klassen för maten
     def __init__(self, game):
         self.game = game # för att hantera maten behöver vi tillgång till spelet
@@ -7,6 +7,7 @@ class Food:     # Klassen för maten
         self.eaten = 0; # Variabel som håller koll på hur mycket mat som ätits så vi kan öka svårighetsgraden
         self.exists = False; # Variabel som håller koll på om maten finns på spelplanen
         self.special = False; # Variabel som håller koll på om specialmaten finns på spelplanen
+        self.special_TTL = None # Variabel som håller koll på hur länge specialmaten ska existera
  
     def spawn_food(self): # Funktion som spawnar in maten på spelplanen på slumpmässig "ledig" plats
         while True:
@@ -22,9 +23,19 @@ class Food:     # Klassen för maten
                 x = random.randint(0, len(self.board) - 1)
                 y = random.randint(0, len(self.board[0]) - 1)
                 if self.board[x][y] not in [1, 2, 3, 5]: # ska inte heller kunna spawna ovanpå annan mat
+                    self.special_TTL = pygame.time.get_ticks() + max(500, 15000 - self.game.level * self.game.difficulty+1 * 500)
+                    
                     self.board[x][y] = 6
                     self.special = True
                     break
+                
+    def remove_special_food(self): # Funktion som tar bort specialmaten från spelplanen
+        if(self.special and pygame.time.get_ticks() > self.special_TTL):
+            for i in range(len(self.board)):
+                for j in range(len(self.board[0])):
+                    if self.board[i][j] == 6:
+                        self.board[i][j] = 0
+                        self.special = False
             
     def eat_food(self): # Funktion som körs när ormen äter maten
         self.game.score += self.game.level*(self.game.difficulty+1)

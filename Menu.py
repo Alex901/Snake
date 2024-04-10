@@ -12,7 +12,7 @@ class Menu:
         self.screen.fill((0, 0, 0))
         self.menu_items = []
         title_font = pygame.font.Font(None, 62) # Skapar en font för titeln
-        title = title_font.render("SNAKE v_0.0.1", True, (220, 20, 60)) # Skapar titeln
+        title = title_font.render("Snake_ITH", True, (220, 20, 60)) # Skapar titeln
         title_height = title.get_height() 
         option_height = self.font.render(self.menu_options[0], True, (0, 0, 0)).get_height() # Höjden på varje menyval
         spacing = 20  # Avstånd mellan varje menyval

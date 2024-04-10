@@ -3,6 +3,7 @@ import pygame
 from Menu import Menu
 from Snake import Snake
 from Food import Food
+from queue import PriorityQueue
 
 CELL_SIZE = 15  # Storleken på varje cell i pixlar
 GRID_SIZE = 31  # Antal celler i varje riktning
@@ -15,7 +16,7 @@ LEVEL = 1
 
 class Game: # Klassen som hanterar spelet 
     def __init__(self, board_size=GRID_SIZE):   # Konstruktor, skulle int behöva variabeln för board_size här. 
-        pygame.display.set_caption("Snake")     # Sätter titeln för fönstret till Snake
+        pygame.display.set_caption("SNAKE ITH")     # Sätter titeln för fönstret till Snake
         self.score = 0; # Variabel som håller koll på poängen
         self.level = 1; # Variabel som håller koll på vilken nivå spelaren är på
         self.board_size = board_size # Storleken på spelplanen
@@ -111,25 +112,76 @@ class Game: # Klassen som hanterar spelet
             if self.start: # Om spelet har startat     
                 if self.god:
                     self.update_gamespeed()
-                    print("Auto play")
                     self.auto_play()
                     
                 self.draw_grid()  
                 self.draw_score_level() 
+                self.food.remove_special_food() # Ta bort specialmaten om den har existerat för länge
                 pygame.display.flip()  # Uppdaterar fönstret
                 
                 self.clock.tick(self.game_speed)  # Uppdaterar klockan
                 if not self.food.exists: # Om det inte finns någon mat på spelplanen
                     self.food.spawn_food() # Skapa ny mat
-                    
+
+                
             self.snake.move()   # Flytta ormen         
 
         pygame.quit()  # Stänger ner pygame
         
-    def auto_play(self): # Funktion som spelar speled automagiskt     
-        self.start = True
-        self.snake.direction = 'UP'
+    def auto_play(self):
+        self.start = True  # Ifall man inte har startat spelet
+        food_pos, special_food_pos, head_pos = self.find_positions()
+        print("Food pos: ", food_pos, special_food_pos, head_pos)
         
+        target_pos = special_food_pos if special_food_pos is not None else food_pos 
+        print("Target pos: ", target_pos)
+        # path to target, remember to avoid walls and 180 turns
+        # follow path to target
+
+
+    def find_positions(self):
+        food_pos = None
+        special_food_pos = None
+        head_pos = None
+
+        for i in range(len(self.game_board)):
+            for j in range(len(self.game_board[i])):
+                if self.game_board[i][j] == 5:  # 
+                    food_pos = (j, i)
+                elif self.game_board[i][j] == 6:  
+                    special_food_pos = (j, i)
+                elif self.game_board[i][j] == 2: 
+                    head_pos = (j, i)
+
+        return food_pos, special_food_pos, head_pos
+        
+    
+    def find_next(self, direction, pos_head):
+        if direction == "UP":
+            return self.game_board[pos_head[1] - 1][pos_head[0]]
+        elif direction == "DOWN":
+            return self.game_board[pos_head[1] + 1][pos_head[0]]
+        elif direction == "LEFT":
+            return self.game_board[pos_head[1]][pos_head[0] - 1]
+        elif direction == "RIGHT":
+            return self.game_board[pos_head[1]][pos_head[0] + 1]
+        
+        
+    
+    def print_board(self):
+        food_pos, special_food_pos, head_pos = self.find_positions()
+        for y in range(len(self.game_board)):
+            for x in range(len(self.game_board[0])):
+                pos = (x, y)
+                if pos in self.snake.body:
+                    print('S', end='')  # Print the snake's body
+                elif pos == food_pos:
+                    print('F', end='')  # Print the food
+                elif pos == special_food_pos:
+                    print('SF', end='')
+                else:
+                    print(' ', end='')  # Print an empty space
+            print()
         
     def reset(self):
         self.score = 0

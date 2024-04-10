@@ -20,22 +20,33 @@ class Snake:    # Klassen för ormen
         self.food = game.food
         self.body = [self.position_head[:]]
         self.screen = game.screen
-        self.god = False
 
         self.board[self.position_head[0]][self.position_head[1]] = 2
         
     def set_direction(self, direction_key): # Funktion som sätter ormens riktning, inga konstigheter
         new_direction = None   
 
+        print("Setting new direction: ", direction_key)
         
-        if direction_key == pygame.K_w and self.direction != 'DOWN':
-            new_direction = 'UP'
-        elif direction_key == pygame.K_s and self.direction != 'UP':
-            new_direction = 'DOWN'
-        elif direction_key == pygame.K_a and self.direction != 'RIGHT':
-            new_direction = 'LEFT'
-        elif direction_key == pygame.K_d and self.direction != 'LEFT':
-            new_direction = 'RIGHT'
+        
+        if isinstance(direction_key, str):
+            if direction_key == 'UP' and self.direction != 'DOWN':
+                new_direction = 'UP'
+            elif direction_key == 'DOWN' and self.direction != 'UP':
+                new_direction = 'DOWN'
+            elif direction_key == 'LEFT' and self.direction != 'RIGHT':
+                new_direction = 'LEFT'
+            elif direction_key == 'RIGHT' and self.direction != 'LEFT':
+                new_direction = 'RIGHT'
+        else:
+            if direction_key == pygame.K_w and self.direction != 'DOWN':
+                new_direction = 'UP'
+            elif direction_key == pygame.K_s and self.direction != 'UP':
+                new_direction = 'DOWN'
+            elif direction_key == pygame.K_a and self.direction != 'RIGHT':
+                new_direction = 'LEFT'
+            elif direction_key == pygame.K_d and self.direction != 'LEFT':
+                new_direction = 'RIGHT'
 
         
         if new_direction in DIRECTIONS: # updatera riktningen om den är giltig
