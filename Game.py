@@ -146,7 +146,6 @@ class Game: # Klassen som hanterar spelet
                     # Guide the snake through the path
                     self.snake.direction = self.get_direction(head_pos, pos)
                     self.snake.set_direction(self.snake.direction)
-                    head_pos = pos
             else:
                 print("No path found")
         else:
@@ -209,7 +208,7 @@ class Game: # Klassen som hanterar spelet
         return (
             0 <= x < self.board_size and 
             0 <= y < self.board_size and 
-            self.game_board[y][x] != 1 and  
+            self.game_board[x][y] != 1 and  
             (x, y) not in self.snake.body  
         )
     
@@ -243,8 +242,8 @@ class Game: # Klassen som hanterar spelet
     
     def print_board(self, path):
         food_pos, special_food_pos, head_pos = self.find_positions()
-        for j in range(len(self.game_board[0])):  # j is now the column number (x-coordinate)
-            for i in range(len(self.game_board)):  # i is now the row number (y-coordinate)
+        for j in range(len(self.game_board[0])):  
+            for i in range(len(self.game_board)):  
                 pos = (i, j)
                 if pos == head_pos:
                     print('H', end='')
