@@ -23,7 +23,7 @@ class Food:     # Klassen för maten
                 x = random.randint(0, len(self.board) - 1)
                 y = random.randint(0, len(self.board[0]) - 1)
                 if self.board[x][y] not in [1, 2, 3, 5]: # ska inte heller kunna spawna ovanpå annan mat
-                    self.special_TTL = pygame.time.get_ticks() + max(500, 15000 - self.game.level * self.game.difficulty+1 * 500)
+                    self.special_TTL = pygame.time.get_ticks() + max(500, 12000 - self.game.level * self.game.difficulty+1 * 500)
                     
                     self.board[x][y] = 6
                     self.special = True

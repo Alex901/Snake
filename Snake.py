@@ -67,6 +67,13 @@ class Snake:    # Klassen för ormen
         # Kolla om ormen krockar med något + renderar game over menyn. Jag vet, "fel" ställe :)
         if self.board[self.position_head[0]][self.position_head[1]] in [1, 3]:
             self.running = False
+            
+            if self.board[self.position_head[0]][self.position_head[1]] == 1:
+                print("Game Over: Hit a wall")
+            elif self.board[self.position_head[0]][self.position_head[1]] == 3:
+                print("Game Over: Hit tail")
+            else:
+                print("Game Over: Other")
 
             font = pygame.font.Font(None, 74)  
             game_over_text = font.render("Game Over", True, (128,0,0))  

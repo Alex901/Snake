@@ -110,6 +110,7 @@ class Game: # Klassen som hanterar spelet
                         self.start = not self.start
             
             if self.start: # Om spelet har startat     
+                self.print_board(self.snake.body)
                 if self.god:
                     self.update_gamespeed()
                     self.auto_play()
@@ -137,7 +138,92 @@ class Game: # Klassen som hanterar spelet
         print("Target pos: ", target_pos)
         # path to target, remember to avoid walls and 180 turns
         # follow path to target
+        if target_pos is not None:
+            path = self.A_star(head_pos, target_pos)
+            if path is not None:
+                self.print_board(path)
+                for pos in path:
+                    # Guide the snake through the path
+                    self.snake.direction = self.get_direction(head_pos, pos)
+                    self.snake.set_direction(self.snake.direction)
+                    head_pos = pos
+            else:
+                print("No path found")
+        else:
+            return
 
+    def A_star(self, start, target):
+        open_set = PriorityQueue()
+        open_set.put((0, start))
+        came_from = {}
+        g_score = {start: 0}
+        f_score = {start: self.heuristic(start, target)}
+
+        while not open_set.empty():
+            current = open_set.get()[1]
+            if current == target:
+                path = []
+                while current in came_from:
+                    path.append(current)
+                    current = came_from[current]
+                return path[::-1]
+
+            for neighbor in self.get_neighbors(current):
+                temp_g_score = g_score[current] + 1
+
+                if temp_g_score < g_score.get(neighbor, float('inf')):
+                    if neighbor in self.snake.body[1:]:
+                        continue
+
+                    came_from[neighbor] = current
+                    g_score[neighbor] = temp_g_score
+                    f_score[neighbor] = temp_g_score + self.heuristic(neighbor, target)
+                    open_set.put((f_score[neighbor], neighbor))
+    
+    def heuristic(self, pos, target):
+        return abs(pos[0] - target[0]) + abs(pos[1] - target[1])
+    
+    def get_neighbors(self, pos):
+        neighbors = [
+            (pos[0] - 1, pos[1]), 
+            (pos[0] + 1, pos[1]), 
+            (pos[0], pos[1] - 1), 
+            (pos[0], pos[1] + 1),  
+        ]
+
+
+        return [neighbor for neighbor in neighbors if 0 <= neighbor[0] < len(self.game_board[0]) and 0 <= neighbor[1] < len(self.game_board) and neighbor not in self.snake.body[1:]]
+    
+    def reconstruct_path(self, came_from, current):
+        path = []
+        while current in came_from:
+            path.append(current)
+            current = came_from[current]
+        return path[::-1]
+    
+    def distance(self, pos1, pos2):
+        return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
+    
+    def is_valid(self, pos):
+        x, y = pos
+        return (
+            0 <= x < self.board_size and 
+            0 <= y < self.board_size and 
+            self.game_board[y][x] != 1 and  
+            (x, y) not in self.snake.body  
+        )
+    
+
+    def get_direction(self, current_pos, next_pos):
+        dx, dy = next_pos[0] - current_pos[0], next_pos[1] - current_pos[1]
+        if dx < 0:
+            return 'LEFT'
+        elif dx > 0:
+            return 'RIGHT'
+        elif dy < 0:
+            return 'UP'
+        else:
+            return 'DOWN'
 
     def find_positions(self):
         food_pos = None
@@ -147,40 +233,31 @@ class Game: # Klassen som hanterar spelet
         for i in range(len(self.game_board)):
             for j in range(len(self.game_board[i])):
                 if self.game_board[i][j] == 5:  # 
-                    food_pos = (j, i)
+                    food_pos = (i, j)
                 elif self.game_board[i][j] == 6:  
-                    special_food_pos = (j, i)
+                    special_food_pos = (i, j)
                 elif self.game_board[i][j] == 2: 
-                    head_pos = (j, i)
+                    head_pos = (i, j)
 
         return food_pos, special_food_pos, head_pos
-        
     
-    def find_next(self, direction, pos_head):
-        if direction == "UP":
-            return self.game_board[pos_head[1] - 1][pos_head[0]]
-        elif direction == "DOWN":
-            return self.game_board[pos_head[1] + 1][pos_head[0]]
-        elif direction == "LEFT":
-            return self.game_board[pos_head[1]][pos_head[0] - 1]
-        elif direction == "RIGHT":
-            return self.game_board[pos_head[1]][pos_head[0] + 1]
-        
-        
-    
-    def print_board(self):
+    def print_board(self, path):
         food_pos, special_food_pos, head_pos = self.find_positions()
-        for y in range(len(self.game_board)):
-            for x in range(len(self.game_board[0])):
-                pos = (x, y)
-                if pos in self.snake.body:
-                    print('S', end='')  # Print the snake's body
+        for j in range(len(self.game_board[0])):  # j is now the column number (x-coordinate)
+            for i in range(len(self.game_board)):  # i is now the row number (y-coordinate)
+                pos = (i, j)
+                if pos == head_pos:
+                    print('H', end='')
+                elif self.game_board[i][j] == 3:
+                    print('\033[31mB\033[0m', end='')
                 elif pos == food_pos:
-                    print('F', end='')  # Print the food
+                    print('F', end='')  
                 elif pos == special_food_pos:
                     print('SF', end='')
+                elif pos in path:
+                    print('\033[34mP\033[0m', end='')  
                 else:
-                    print(' ', end='')  # Print an empty space
+                    print(self.game_board[i][j], end='')  
             print()
         
     def reset(self):
