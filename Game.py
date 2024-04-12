@@ -136,20 +136,30 @@ class Game: # Klassen som hanterar spelet
         
         target_pos = special_food_pos if special_food_pos is not None else food_pos 
         print("Target pos: ", target_pos)
-        # path to target, remember to avoid walls and 180 turns
-        # follow path to target
         if target_pos is not None:
             path = self.A_star(head_pos, target_pos)
-            if path is not None:
-                self.print_board(path)
-                for pos in path:
-                    # Guide the snake through the path
-                    self.snake.direction = self.get_direction(head_pos, pos)
-                    self.snake.set_direction(self.snake.direction)
-            else:
-                print("No path found")
+            self.print_board(path)
+        else: 
+            target_pos = (self.board_size // 2, self.board_size // 2)
+            path = self.A_star(head_pos, target_pos)
+            self.print_board(path)
+        if path:  # Check if the path list is not empty
+            next_pos = path[0]  # Get the next position from the path
+            self.snake.direction = self.get_direction(self.snake.position_head, next_pos)  # Set the snake's direction
+            self.snake.set_direction(self.snake.direction)  # Update the snake's direction
+            path.pop(0)  # Remove the next position from the path
         else:
-            return
+            print("No path found")
+
+    def get_next_position(self, direction):
+        directions = {'UP': (-1, 0), 'DOWN': (1, 0), 'LEFT': (0, -1), 'RIGHT': (0, 1)}
+        head_pos = self.snake.position_head
+
+        if direction == 'STOP':
+            return head_pos
+
+        dx, dy = directions[direction]
+        return (head_pos[0] + dx, head_pos[1] + dy) 
 
     def A_star(self, start, target):
         open_set = PriorityQueue()
@@ -170,10 +180,13 @@ class Game: # Klassen som hanterar spelet
             for neighbor in self.get_neighbors(current):
                 temp_g_score = g_score[current] + 1
 
-                if temp_g_score < g_score.get(neighbor, float('inf')):
-                    if neighbor in self.snake.body[1:]:
-                        continue
+                if neighbor in self.snake.body[1:]:
+                    # If the neighbor cell is occupied by a part of the snake, add a cost based on the position of that part
+                    temp_g_score += 1000 / (2 ** (len(self.snake.body) - self.snake.body.index(neighbor) - 1))
+                elif self.game_board[neighbor[0]][neighbor[1]] == 1 or self.game_board[neighbor[0]][neighbor[1]] == 3:
+                    temp_g_score += 1000
 
+                if temp_g_score < g_score.get(neighbor, float('inf')):
                     came_from[neighbor] = current
                     g_score[neighbor] = temp_g_score
                     f_score[neighbor] = temp_g_score + self.heuristic(neighbor, target)
@@ -205,12 +218,20 @@ class Game: # Klassen som hanterar spelet
     
     def is_valid(self, pos):
         x, y = pos
-        return (
+        valid = (
             0 <= x < self.board_size and 
             0 <= y < self.board_size and 
-            self.game_board[x][y] != 1 and  
+            self.game_board[x][y] != '1' and  
             (x, y) not in self.snake.body  
         )
+        if not valid:
+            if not (0 <= x < self.board_size and 0 <= y < self.board_size):
+                print(f"Position {pos} is out of bounds")
+            elif self.game_board[x][y] == '1':
+                print(f"Position {pos} is a wall")
+            elif (x, y) in self.snake.body:
+                print(f"Position {pos} is part of the snake's body")
+        return valid
     
 
     def get_direction(self, current_pos, next_pos):
@@ -267,6 +288,8 @@ class Game: # Klassen som hanterar spelet
         self.food = Food(self)
         self.snake = Snake(self)
         self.god = False
+        self.path = []  # Reset path for auto-play
+        self.start = False
         print("Reset")
         print(self.god)
         
